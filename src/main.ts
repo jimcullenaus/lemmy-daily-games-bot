@@ -3,8 +3,18 @@ import { config } from 'dotenv';
 import TitleService from './services/title-service';
 import ScreenshotService from './services/screenshot-service';
 
+let path: string;
+
+const env = process.argv[2];
+if (env && env === 'dev') {
+    path = '.env.development.local';
+} else {
+    path = '.env';
+}
+
 config({
-    override: true
+    override: true,
+    path
 });
 
 const {
