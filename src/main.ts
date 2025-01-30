@@ -16,7 +16,7 @@ const {
     TIMEZONE,
     CRON_EXPRESSION
 } = process.env as Record<string, string>;
-console.log(`${LOGIN_INSTANCE_NAME},${POST_INSTANCE_NAME},${COMMUNITY_NAME},${USERNAME},${TIMEZONE},${CRON_EXPRESSION}`);
+
 const _titleService = new TitleService(TIMEZONE);
 const _screenshotService = new ScreenshotService();
 
