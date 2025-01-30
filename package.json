@@ -1,0 +1,33 @@
+{
+  "name": "lemmy-connections-poster-bot",
+  "version": "1.0.0",
+  "description": "Bot for posting the daily Connections challenge to Lemmy",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jimcullenaus/lemmy-connections-poster-bot.git"
+  },
+  "keywords": [
+    "lemmy"
+  ],
+  "author": "Jim Cullen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jimcullenaus/lemmy-connections-poster-bot/issues"
+  },
+  "homepage": "https://github.com/jimcullenaus/lemmy-connections-poster-bot#readme",
+  "dependencies": {
+    "canvas": "^3.1.0",
+    "dotenv": "^16.4.7",
+    "lemmy-bot": "^0.6.4",
+    "luxon": "^3.5.0",
+    "puppeteer": "^24.1.1",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.2"
+  }
+}
