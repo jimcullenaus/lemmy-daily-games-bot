@@ -26,8 +26,7 @@
     "lemmy-bot": "^0.6.4",
     "luxon": "^3.5.0",
     "puppeteer": "^24.1.1",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
     "@types/luxon": "^3.4.2"
