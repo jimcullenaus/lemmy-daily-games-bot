@@ -1,6 +1,6 @@
 {
   "name": "lemmy-connections-poster-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bot for posting the daily Connections challenge to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",
