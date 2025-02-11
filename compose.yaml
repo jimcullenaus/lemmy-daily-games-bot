@@ -1,0 +1,16 @@
+services:
+  node:
+    build: .
+    image: daily-games-bot:latest
+    environment:
+      - LOGIN_INSTANCE_NAME=${LOGIN_INSTANCE_NAME}
+      - POST_INSTANCE_NAME=${POST_INSTANCE_NAME}
+      - COMMUNITY_NAME=${COMMUNITY_NAME}
+      - BOT_USERNAME=${BOT_USERNAME}
+      - PASSWORD=${PASSWORD}
+      - FEDERATION=${FEDERATION}
+      - TIMEZONE=${TIMEZONE}
+      - CRON_EXPRESSION=${CRON_EXPRESSION}
+    volumes:
+      # - ${ENV_FILE:?Env file not provided}:/usr/src/app/.env
+      - ./logs:/usr/src/app/logs

@@ -1,4 +1,4 @@
-A bot for automating the submission of daily games to the Lemmy !dailygames@lemmy.zip community.
+A bot for automating the submission of daily games to the Lemmy [!dailygames@lemmy.zip](https://lemmy.zip/c/dailygames) community.
 
 ## Running
 
@@ -9,7 +9,7 @@ shown with their original values:
 LOGIN_INSTANCE_NAME='lemmy.zip'
 POST_INSTANCE_NAME='lemmy.zip'
 COMMUNITY_NAME='dailygames'
-USERNAME='DailyGameBot'
+BOT_USERNAME='DailyGameBot'
 PASSWORD=''
 FEDERATION='local'
 TIMEZONE='Australia/Brisbane'
@@ -21,5 +21,5 @@ CRON_EXPRESSION='0 0 14 * * *'
 
 ## Testing
 
-1. Add an alternative environment file, `.env.development.local` with configuration for testing.
+1. Add an alternative environment file, `.env.development` with configuration for testing.
 2. Run with `npm run dev`

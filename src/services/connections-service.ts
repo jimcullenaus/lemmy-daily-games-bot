@@ -9,14 +9,19 @@ export default class ConnectionsService {
     private _titleService : TitleService;
     private _screenshotService : ScreenshotService;
 
-    constructor(botActions : BotActions, TIMEZONE : string) {
+    private _instance : string;
+
+    constructor(botActions : BotActions, TIMEZONE : string, LOGIN_INSTANCE_NAME : string) {
         this._botActions = botActions;
         this._titleService = new TitleService(TIMEZONE);
+        this._instance = LOGIN_INSTANCE_NAME;
         this._screenshotService = new ScreenshotService();
     }
 
     public async postConnectionsDaily(communityId : number) {
         const title = this._titleService.getTitle();
+
+        console.log(`title is ${title}`);
 
         const screenshot = await this.captureScreenshot();
 
@@ -30,7 +35,7 @@ export default class ConnectionsService {
             url: imageUrl
         });
 
-        console.log(`created post: ${createPostResponse.post_view.post.url}`);
+        console.log(`created post: https://${this._instance}/post/${createPostResponse.post_view.post.id}`);
     }
 
     private async captureScreenshot() : Promise<Buffer | null> {
