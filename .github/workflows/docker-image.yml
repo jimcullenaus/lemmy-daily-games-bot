@@ -11,6 +11,10 @@ jobs:
       uses: actions/checkout@v4
     - name: Log in to GitHub Container Registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+    - name: Set environment variables
+      run: |
+        echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
+
     - name: Read version from package.json
       id: get-version
       run: |
@@ -22,4 +26,4 @@ jobs:
       run: |
         docker build -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
         docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}t:${{ env.VERSION }}
+        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
