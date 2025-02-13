@@ -20,6 +20,6 @@ jobs:
         echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
     - name: Build and push Docker image
       run: |
-        docker build -t ghcr.io/${{ github.repository_owner }/${{ env.IMAGE_NAME }}:latest -t ghcr.io/${{ github.repository_owner }/${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
-        docker push ghcr.io/${{ github.repository_owner }/${{ env.IMAGE_NAME }}:latest
-        docker push ghcr.io/${{ github.repository_owner }/${{ env.IMAGE_NAME }}t:${{ env.VERSION }}
+        docker build -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
+        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}t:${{ env.VERSION }}
