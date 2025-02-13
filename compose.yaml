@@ -1,7 +1,7 @@
 services:
   node:
     build: .
-    image: daily-games-bot:latest
+    image: lemmy-daily-games-bot:latest
     environment:
       - LOGIN_INSTANCE_NAME=${LOGIN_INSTANCE_NAME}
       - POST_INSTANCE_NAME=${POST_INSTANCE_NAME}

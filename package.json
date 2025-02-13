@@ -1,5 +1,5 @@
 {
-  "name": "daily-games-bot",
+  "name": "lemmy-daily-games-bot",
   "version": "1.0.3",
   "description": "Bot for posting the daily Connections challenge to Lemmy",
   "scripts": {
