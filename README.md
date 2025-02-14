@@ -19,6 +19,10 @@ CRON_EXPRESSION='0 0 14 * * *'
 2. Run `npm i`
 3. Run with `npm start`
 
+### Running in Docker
+
+Ensure environment variables as above are set. `docker-compose up` will read from the `.env` file by default, or a different file can be specified with `docker-compose --env-file <filename> up`.
+
 ## Testing
 
 1. Add an alternative environment file, `.env.development` with configuration for testing.

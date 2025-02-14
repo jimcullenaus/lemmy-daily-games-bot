@@ -2,28 +2,41 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "*" # Build on all branches
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Log in to GitHub Container Registry
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-    - name: Set environment variables
-      run: |
-        echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      - name: Set environment variables
+        run: |
+          echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-    - name: Read version from package.json
-      id: get-version
-      run: |
-        VERSION=$(jq -r .version package.json)
-        IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-    - name: Build and push Docker image
-      run: |
-        docker build -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest -t ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }} .
-        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-        docker push ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+
+      - name: Read version from package.json
+        id: get-version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+      - name: Build and push Docker image
+        run: |
+          if [[ "${{ env.BRANCH_NAME }}" == "main" ]]; then
+            TAG_LATEST="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+            TAG_VERSION="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
+            docker build -t $TAG_LATEST -t $TAG_VERSION .
+            docker push $TAG_LATEST
+            docker push $TAG_VERSION
+          else
+            TAG_BRANCH="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ env.BRANCH_NAME }}"
+            docker build -t $TAG_BRANCH .
+            docker push $TAG_BRANCH
+          fi
