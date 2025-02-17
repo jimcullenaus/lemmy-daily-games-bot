@@ -3,11 +3,14 @@ name: Docker Image CI
 on:
   push:
     branches:
-      - "*" # Build on all branches
+      - 'main'
+      - 'bugfix/*'
+      - 'feature/*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'doc') && !contains(github.event.head_commit.message, 'WIP')"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
