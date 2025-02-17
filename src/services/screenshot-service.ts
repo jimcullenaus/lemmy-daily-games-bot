@@ -4,7 +4,10 @@ import { setTimeout } from 'timers/promises';
 export default class ScreenshotService {
     async captureScreenshot(): Promise<Buffer> {
         console.log('Launching Puppeteer browser');
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         const page = await browser.newPage();
         await page.goto('https://www.nytimes.com/games/connections', { waitUntil: "networkidle2" });
 
