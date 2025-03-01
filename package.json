@@ -1,6 +1,6 @@
 {
   "name": "lemmy-daily-games-bot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Bot for posting the daily Connections challenge to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",
