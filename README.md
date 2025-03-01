@@ -16,7 +16,7 @@ TIMEZONE='Australia/Brisbane'
 CRON_EXPRESSION='0 0 14 * * *'
 ```
 
-2. Run `npm i`
+2. Run `npm install --omit=optional`
 3. Run with `npm start`
 
 ### Running in Docker

@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
     fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install
+RUN npm install --omit=optional
 
 # Run the application as a non-root user.
 USER node

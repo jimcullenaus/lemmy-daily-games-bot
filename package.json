@@ -1,6 +1,6 @@
 {
   "name": "lemmy-daily-games-bot",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Bot for posting the daily Connections challenge to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",
@@ -24,7 +24,7 @@
   "dependencies": {
     "canvas": "^3.1.0",
     "dotenv": "^16.4.7",
-    "lemmy-bot": "^0.6.4",
+    "lemmy-bot": "github:SleeplessOne1917/lemmy-bot#optional-sqlite",
     "luxon": "^3.5.0",
     "npm-deprecated-check": "^1.3.0",
     "puppeteer": "^24.2.0",
