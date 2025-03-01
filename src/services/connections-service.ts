@@ -27,12 +27,13 @@ export default class ConnectionsService {
 
         // If screenshot was not obtained, make URL blank
         const imageUrl = screenshot ? await this.uploadImage(screenshot) : '';
+
         const body = 'https://www.nytimes.com/games/connections';
         const createPostResponse = await this._botActions.createPost({
             name: title,
             body: body,
             community_id: communityId,
-            url: imageUrl
+            url: imageUrl || undefined
         });
 
         console.log(`created post: https://${this._instance}/post/${createPostResponse.post_view.post.id}`);
@@ -51,6 +52,8 @@ export default class ConnectionsService {
             await setTimeout(delay)
         }
 
+        console.log('failed to capture screenshot, continuing without it');
+
         return null;
     }
 
@@ -65,7 +68,7 @@ export default class ConnectionsService {
                     throw new Error('no url returned from uploading image');
                 }
             } catch (e) {
-                console.log('error uploading image');
+                console.log('error uploading image:');
                 console.log(e);
             }
 
@@ -73,6 +76,8 @@ export default class ConnectionsService {
             const delay = (2 ** i) * 1000;
             await setTimeout(delay)
         }
+
+        console.log('failed to upload image, continuing with out it');
 
         return '';
     }

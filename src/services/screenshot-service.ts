@@ -24,7 +24,8 @@ export default class ScreenshotService {
         await setTimeout(2000);
 
         // Close the Hint tooltip if one exists
-        await this.clickButton("//*[contains(@class, 'Tooltip-module_close')]", page, false);
+        await this.clickButton("//*[contains(@class, 'Tooltip-module_close')]//button", page, false);
+        await this.clickButton("//*[contains(@class, 'Popover-module_popover')]//button", page, false);
 
         // Fade out
         await setTimeout(500);
@@ -56,7 +57,7 @@ export default class ScreenshotService {
             if (button) {
                 button.click();
             } else if (required) {
-                throw new Error(`no button found with selector "${selector}`);
+                console.log(`no button found with selector "${selector}`);
             }
         }, selector, required);
     }
