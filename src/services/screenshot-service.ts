@@ -27,6 +27,13 @@ export default class ScreenshotService {
         await this.clickButton("//*[contains(@class, 'Popover-module_popover')]//button", page, false);
 
         // Fade out
+        await setTimeout(200);
+
+        // Close login button and Hint tooltip
+        // Yes, Hint tooltip is theoretically done above, but it wasn't working, so brute force it
+        await this.clickButton("//*[@role='button']", page, false);
+        await setTimeout(200);
+        await this.clickButton("//*[@role='button']", page, false);
         await setTimeout(500);
 
         // Get element for screenshotting

@@ -16,7 +16,7 @@
     "lemmy"
   ],
   "author": "Jim Cullen",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/jimcullenaus/lemmy-connections-poster-bot/issues"
   },
