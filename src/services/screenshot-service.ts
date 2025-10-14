@@ -53,6 +53,29 @@ export default class ScreenshotService {
                     // Future: implement hiding elements
                     break;
             }
+            throw new Error(`${gameConfig.screenshotSelector} was not found in main page or any iframe`);
+        }
+    }
+
+    private async executeScreenshotActions(page: Page, actions: ScreenshotAction[]): Promise<void> {
+        for (const action of actions) {
+            switch (action.type) {
+                case 'click':
+                    if (action.selector) {
+                        await this.clickButton(action.selector, page, action.required);
+                    } else if (action.text) {
+                        await this.clickButtonByText(action.text, page, action.required);
+                    }
+                    break;
+                case 'wait':
+                    if (action.duration) {
+                        await setTimeout(action.duration);
+                    }
+                    break;
+                case 'hide':
+                    // Future: implement hiding elements
+                    break;
+            }
         }
     }
 

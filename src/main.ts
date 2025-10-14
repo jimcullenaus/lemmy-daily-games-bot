@@ -57,7 +57,7 @@ const bot = new LemmyBot({
                 name: `${COMMUNITY_NAME}@${POST_INSTANCE_NAME}`
             });
 
-            // Post each game
+            // Post for each configured game
             for (const gameConfig of GAMES) {
                 try {
                     console.log(`Posting ${gameConfig.name}...`);
@@ -65,6 +65,7 @@ const bot = new LemmyBot({
                     console.log(`Successfully posted ${gameConfig.name}`);
                 } catch (error) {
                     console.error(`Failed to post ${gameConfig.name}:`, error);
+                    // Continue with other games even if one fails
                 }
             }
         }
