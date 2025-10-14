@@ -1,7 +1,7 @@
 {
   "name": "lemmy-daily-games-bot",
-  "version": "1.1.0",
-  "description": "Bot for posting the daily Connections challenge to Lemmy",
+  "version": "1.2.0",
+  "description": "Bot for posting daily games to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",
     "dev": "tsx src/main.ts dev",
@@ -16,7 +16,7 @@
     "lemmy"
   ],
   "author": "Jim Cullen",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/jimcullenaus/lemmy-daily-games-bot/issues"
   },

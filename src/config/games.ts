@@ -44,5 +44,18 @@ export const GAMES: GameConfig[] = [
         screenshotActions: [
             { type: 'wait', duration: 5000 } // Wait 5 seconds for page and iframe to load
         ]
+    },
+    {
+        name: 'Crossherd',
+        url: 'https://crossherd.clevergoat.com/',
+        titlePrefix: 'Crossherd',
+        screenshotSelector: 'app-game',
+        startDate: '2025-03-09', // Start date calculated so Oct 14, 2025 = day 220
+        screenshotActions: [
+            { type: 'click', selector: '#toggleDarkMode', required: false },
+            { type: 'wait', duration: 500 },
+            { type: 'click', text: 'Start', required: true },
+            { type: 'wait', duration: 1000 }
+        ]
     }
 ];
