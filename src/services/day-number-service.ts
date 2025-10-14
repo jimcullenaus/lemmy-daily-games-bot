@@ -7,11 +7,11 @@ export default class DayNumberService {
         this._timezone = timezone;
     }
 
-    calculateDayNumber(inputDate : DateTime) : number {
+    calculateDayNumber(inputDate : DateTime, startDateString: string) : number {
         const msPerDay = 1000 * 60 * 60 * 24;
 
         // Compute the start date (Day 1)
-        const startDate = DateTime.fromISO("2023-06-12", { zone: this._timezone }).startOf("day");
+        const startDate = DateTime.fromISO(startDateString, { zone: this._timezone }).startOf("day");
 
         // Calculate the difference in days between inputDate and startDate
         const diffInDays = inputDate.diff(startDate, "days").days;

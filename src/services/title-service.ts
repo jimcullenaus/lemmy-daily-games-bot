@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import DateFormattingService from './date-formatting-service';
 import DayNumberService from './day-number-service';
+import { GameConfig } from '../config/games';
 
 export default class TitleService {
     private _dateService : DateFormattingService;
@@ -14,10 +15,10 @@ export default class TitleService {
         this._dayNumberService = new DayNumberService(this._timezone);
     }
 
-    public getTitle() : string {
+    public getTitle(gameConfig: GameConfig) : string {
         const today = DateTime.now().setZone(this._timezone).startOf("day");
         const date = this._dateService.getDate(today);
-        const number = this._dayNumberService.calculateDayNumber(today);
-        return `Connections #${number} ${date}`;
+        const number = this._dayNumberService.calculateDayNumber(today, gameConfig.startDate);
+        return `${gameConfig.titlePrefix} #${number} ${date}`;
     }
 }
