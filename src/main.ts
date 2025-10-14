@@ -1,6 +1,7 @@
 import LemmyBot from 'lemmy-bot';
 import { config } from 'dotenv';
-import ConnectionsService from './services/connections-service';
+import GameService from './services/game-service';
+import { GAMES } from './config/games';
 
 // Parse the env file if environment variables not already set
 if (!process.env.LOGIN_INSTANCE_NAME
@@ -51,13 +52,22 @@ const bot = new LemmyBot({
         timezone: TIMEZONE,
         runAtStart: true,
         doTask: async (ref) => {
-            const connectionsService = new ConnectionsService(ref.botActions, TIMEZONE, LOGIN_INSTANCE_NAME);
+            const gameService = new GameService(ref.botActions, TIMEZONE, LOGIN_INSTANCE_NAME);
             const communityResponse = await ref.botActions.getCommunity({
                 name: `${COMMUNITY_NAME}@${POST_INSTANCE_NAME}`
             });
 
-            await connectionsService.postConnectionsDaily(communityResponse.community_view.community.id);
-
+            // Post for each configured game
+            for (const gameConfig of GAMES) {
+                try {
+                    console.log(`Posting ${gameConfig.name}...`);
+                    await gameService.postGameDaily(communityResponse.community_view.community.id, gameConfig);
+                    console.log(`Successfully posted ${gameConfig.name}`);
+                } catch (error) {
+                    console.error(`Failed to post ${gameConfig.name}:`, error);
+                    // Continue with other games even if one fails
+                }
+            }
         }
     }
 });
