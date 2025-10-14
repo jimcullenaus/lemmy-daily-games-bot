@@ -2,8 +2,9 @@ import { setTimeout } from 'timers/promises'
 import { BotActions } from 'lemmy-bot/dist/types';
 import ScreenshotService from './screenshot-service';
 import TitleService from './title-service';
+import { GameConfig } from '../config/games';
 
-export default class ConnectionsService {
+export default class GameService {
 
     private _botActions : BotActions;
     private _titleService : TitleService;
@@ -18,17 +19,17 @@ export default class ConnectionsService {
         this._screenshotService = new ScreenshotService();
     }
 
-    public async postConnectionsDaily(communityId : number) {
-        const title = this._titleService.getTitle();
+    public async postGameDaily(communityId : number, gameConfig: GameConfig) {
+        const title = this._titleService.getTitle(gameConfig);
 
         console.log(`title is ${title}`);
 
-        const screenshot = await this.captureScreenshot();
+        const screenshot = await this.captureScreenshot(gameConfig);
 
         // If screenshot was not obtained, make URL blank
         const imageUrl = screenshot ? await this.uploadImage(screenshot) : '';
 
-        const body = 'https://www.nytimes.com/games/connections';
+        const body = gameConfig.url;
         const createPostResponse = await this._botActions.createPost({
             name: title,
             body: body,
@@ -39,10 +40,10 @@ export default class ConnectionsService {
         console.log(`created post: https://${this._instance}/post/${createPostResponse.post_view.post.id}`);
     }
 
-    private async captureScreenshot() : Promise<Buffer | null> {
+    private async captureScreenshot(gameConfig: GameConfig) : Promise<Buffer | null> {
         for (let i = 0; i < 5; ++i) {
             try {
-                return await this._screenshotService.captureScreenshot();
+                return await this._screenshotService.captureScreenshot(gameConfig);
             } catch (e) {
                 console.log(e);
             }

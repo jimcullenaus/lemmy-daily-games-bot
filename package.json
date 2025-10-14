@@ -1,7 +1,7 @@
 {
   "name": "lemmy-daily-games-bot",
-  "version": "1.0.4",
-  "description": "Bot for posting the daily Connections challenge to Lemmy",
+  "version": "1.2.0",
+  "description": "Bot for posting daily games to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",
     "dev": "tsx src/main.ts dev",
@@ -10,17 +10,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jimcullenaus/lemmy-connections-poster-bot.git"
+    "url": "git+https://github.com/jimcullenaus/lemmy-daily-games-bot.git"
   },
   "keywords": [
     "lemmy"
   ],
   "author": "Jim Cullen",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/jimcullenaus/lemmy-connections-poster-bot/issues"
+    "url": "https://github.com/jimcullenaus/lemmy-daily-games-bot/issues"
   },
-  "homepage": "https://github.com/jimcullenaus/lemmy-connections-poster-bot#readme",
+  "homepage": "https://github.com/jimcullenaus/lemmy-daily-games-bot#readme",
   "dependencies": {
     "canvas": "^3.1.0",
     "dotenv": "^16.4.7",
