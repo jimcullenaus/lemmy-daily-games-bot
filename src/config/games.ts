@@ -5,6 +5,7 @@ export interface GameConfig {
     screenshotSelector: string;
     screenshotActions: ScreenshotAction[];
     startDate: string; // ISO date for day numbering
+    cronExpression?: string; // Optional per-game schedule (defaults to global CRON_EXPRESSION)
 }
 
 export interface ScreenshotAction {
@@ -33,7 +34,8 @@ export const GAMES: GameConfig[] = [
             { type: 'wait', duration: 200 },
             { type: 'click', selector: "//*[@role='button']", required: false },
             { type: 'wait', duration: 500 }
-        ]
+        ],
+        cronExpression: '0 4 14 * * *'
     },
     {
         name: 'Circuits',
@@ -41,6 +43,7 @@ export const GAMES: GameConfig[] = [
         titlePrefix: 'Circuits',
         screenshotSelector: '.circuits', // This element is inside an iframe with id 'game-iframe'
         startDate: '2023-10-16', // Start date calculated so Oct 13, 2025 = day 729
+        cronExpression: '0 4 15 * * *',
         screenshotActions: [
             { type: 'wait', duration: 5000 } // Wait 5 seconds for page and iframe to load
         ]
@@ -56,6 +59,7 @@ export const GAMES: GameConfig[] = [
             { type: 'wait', duration: 500 },
             { type: 'click', text: 'Start', required: true },
             { type: 'wait', duration: 1000 }
-        ]
+        ],
+        cronExpression: '0 4 14 * * *'
     }
 ];
