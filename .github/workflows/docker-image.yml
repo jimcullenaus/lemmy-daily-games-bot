@@ -10,10 +10,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, 'doc') && !contains(github.event.head_commit.message, 'WIP')"
+    if: |
+      !startsWith(github.event.head_commit.message, 'doc') &&
+      !contains(github.event.head_commit.message, 'WIP') &&
+      !startsWith(github.event.head_commit.message, 'chore: bump version')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for commit analysis
+          token: ${{ secrets.GITHUB_TOKEN }}  # Required for pushing commits
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
       - name: Set environment variables
@@ -21,25 +29,97 @@ jobs:
           echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
           BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+      - name: Analyze commits and determine version bump
+        id: version-bump
+        run: |
+          CURRENT_VERSION=$(jq -r .version package.json)
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
 
+          # Get BRANCH_NAME from environment (set in previous step)
+          BRANCH_NAME="${{ env.BRANCH_NAME }}"
 
-      - name: Read version from package.json
+          # Check commit messages for version bump indicators
+          BUMP_TYPE="patch"  # Default to patch
+
+          # Get commit messages from the push event
+          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message' | tr '\n' '|')
+
+          # Check for BREAKING changes (major bump)
+          if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|BREAKING CHANGE)"; then
+            BUMP_TYPE="major"
+          # Check for feat: or feat(scope): (minor bump)
+          elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(\(.+\))?:"; then
+            BUMP_TYPE="minor"
+          fi
+
+          echo "BUMP_TYPE=$BUMP_TYPE" >> $GITHUB_ENV
+          echo "Detected bump type: $BUMP_TYPE"
+
+          # Bump version using semver logic
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+          case "$BUMP_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          BASE_VERSION="$MAJOR.$MINOR.$PATCH"
+
+          # For branches, append build number for tagging (but don't commit build number)
+          if [[ "$BRANCH_NAME" != "main" ]]; then
+            # Get build number from git tags for this branch, or use run number
+            BUILD_NUMBER=${{ github.run_number }}
+            NEW_VERSION="${BASE_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
+          else
+            NEW_VERSION="$BASE_VERSION"
+          fi
+
+          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          # Update package.json with base version (without build number for branches)
+          # This ensures future builds increment from the correct base version
+          jq --arg version "$BASE_VERSION" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
+
+          echo "Version bumped from $CURRENT_VERSION to $BASE_VERSION (tagged as $NEW_VERSION)"
+      - name: Read version and image name
         id: get-version
         run: |
           VERSION=$(jq -r .version package.json)
           IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+      - name: Commit version bump
+        if: env.BASE_VERSION != env.CURRENT_VERSION
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "chore: bump version to ${{ env.BASE_VERSION }} [skip ci]" || exit 0
+          git push || exit 0
       - name: Build and push Docker image
         run: |
           if [[ "${{ env.BRANCH_NAME }}" == "main" ]]; then
             TAG_LATEST="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-            TAG_VERSION="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
-            docker build -t $TAG_LATEST -t $TAG_VERSION .
-            docker push $TAG_LATEST
-            docker push $TAG_VERSION
+            TAG_VERSION="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.BASE_VERSION }}"
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              -t $TAG_LATEST -t $TAG_VERSION \
+              --push .
           else
-            TAG_BRANCH="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-${{ env.BRANCH_NAME }}"
-            docker build -t $TAG_BRANCH .
-            docker push $TAG_BRANCH
+            # For branches, use NEW_VERSION which includes branch name and build number
+            TAG_BRANCH="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NEW_VERSION }}"
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              -t $TAG_BRANCH \
+              --push .
           fi
