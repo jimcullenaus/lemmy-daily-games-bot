@@ -21,8 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 \
     libgbm-dev \
     libasound2 \
-    libpangocairo-1.0-dev \
-    libpango-1.0-dev \
+    libpango1.0-dev \
     libcairo2-dev \
     libjpeg62-turbo-dev \
     libpixman-1-dev \
