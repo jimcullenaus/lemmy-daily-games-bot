@@ -9,7 +9,7 @@ COPY package*.json ./
 
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3 \
     pkg-config \
@@ -24,12 +24,10 @@ RUN apt-get update && apt-get install -y \
     libpangocairo-1.0-dev \
     libpango-1.0-dev \
     libcairo2-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libpixman-1-dev \
     libgif-dev \
     libpng-dev \
-    libpangocairo-1.0-0 \
-    libpango-1.0-0 \
     libgtk-3-0 \
     libxdamage1 \
     libxfixes3 \
