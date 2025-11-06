@@ -39,6 +39,9 @@ jobs:
           # Get BRANCH_NAME from environment (set in previous step)
           BRANCH_NAME="${{ env.BRANCH_NAME }}"
 
+          # Initialize BASE_VERSION to current version (will be updated if bumping)
+          BASE_VERSION="$CURRENT_VERSION"
+
           # For branches, check if version has already been bumped for this branch
           # by comparing with main branch version
           if [[ "$BRANCH_NAME" != "main" ]]; then
@@ -71,7 +74,8 @@ jobs:
             if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|BREAKING CHANGE)"; then
               BUMP_TYPE="major"
             # Check for feat: or feat(scope): (minor bump)
-            elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(\(.+\))?:"; then
+            # Match "feat:" exactly OR "feat(anything):" at start of commit message
+            elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(:|\([^)]+\):)"; then
               BUMP_TYPE="minor"
             fi
 
