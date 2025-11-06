@@ -13,7 +13,8 @@ jobs:
     if: |
       !startsWith(github.event.head_commit.message, 'doc') &&
       !contains(github.event.head_commit.message, 'WIP') &&
-      !startsWith(github.event.head_commit.message, 'chore: bump version')
+      !startsWith(github.event.head_commit.message, 'chore: bump version') &&
+      !contains(github.event.head_commit.message, '[skip ci]')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,42 +39,66 @@ jobs:
           # Get BRANCH_NAME from environment (set in previous step)
           BRANCH_NAME="${{ env.BRANCH_NAME }}"
 
-          # Check commit messages for version bump indicators
-          BUMP_TYPE="patch"  # Default to patch
+          # For branches, check if version has already been bumped for this branch
+          # by comparing with main branch version
+          if [[ "$BRANCH_NAME" != "main" ]]; then
+            # Get the version from main branch
+            MAIN_VERSION=$(git show origin/main:package.json 2>/dev/null | jq -r .version 2>/dev/null || echo "$CURRENT_VERSION")
 
-          # Get commit messages from the push event
-          COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message' | tr '\n' '|')
-
-          # Check for BREAKING changes (major bump)
-          if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|BREAKING CHANGE)"; then
-            BUMP_TYPE="major"
-          # Check for feat: or feat(scope): (minor bump)
-          elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(\(.+\))?:"; then
-            BUMP_TYPE="minor"
+            # If current version matches main, this is a new branch - bump version
+            # Otherwise, use existing version (already bumped for this branch)
+            if [[ "$CURRENT_VERSION" == "$MAIN_VERSION" ]]; then
+              SHOULD_BUMP=true
+              echo "New branch detected, will bump version from main ($MAIN_VERSION)"
+            else
+              SHOULD_BUMP=false
+              BASE_VERSION="$CURRENT_VERSION"
+              echo "Branch already has version $CURRENT_VERSION, reusing it"
+            fi
+          else
+            # On main, always bump version
+            SHOULD_BUMP=true
           fi
 
-          echo "BUMP_TYPE=$BUMP_TYPE" >> $GITHUB_ENV
-          echo "Detected bump type: $BUMP_TYPE"
+          if [[ "$SHOULD_BUMP" == "true" ]]; then
+            # Check commit messages for version bump indicators
+            BUMP_TYPE="patch"  # Default to patch
 
-          # Bump version using semver logic
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            # Get commit messages from the push event
+            COMMIT_MESSAGES=$(echo '${{ toJSON(github.event.commits) }}' | jq -r '.[].message' | tr '\n' '|')
 
-          case "$BUMP_TYPE" in
-            major)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            patch)
-              PATCH=$((PATCH + 1))
-              ;;
-          esac
+            # Check for BREAKING changes (major bump)
+            if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|BREAKING CHANGE)"; then
+              BUMP_TYPE="major"
+            # Check for feat: or feat(scope): (minor bump)
+            elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(\(.+\))?:"; then
+              BUMP_TYPE="minor"
+            fi
 
-          BASE_VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "BUMP_TYPE=$BUMP_TYPE" >> $GITHUB_ENV
+            echo "Detected bump type: $BUMP_TYPE"
+
+            # Bump version using semver logic
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+            case "$BUMP_TYPE" in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+
+            BASE_VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "Version bumped from $CURRENT_VERSION to $BASE_VERSION"
+          fi
 
           # For branches, append build number for tagging (but don't commit build number)
           if [[ "$BRANCH_NAME" != "main" ]]; then
@@ -87,12 +112,6 @@ jobs:
           echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-          # Update package.json with base version (without build number for branches)
-          # This ensures future builds increment from the correct base version
-          jq --arg version "$BASE_VERSION" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
-
-          echo "Version bumped from $CURRENT_VERSION to $BASE_VERSION (tagged as $NEW_VERSION)"
       - name: Read version and image name
         id: get-version
         run: |
@@ -100,14 +119,6 @@ jobs:
           IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-      - name: Commit version bump
-        if: env.BASE_VERSION != env.CURRENT_VERSION
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json
-          git commit -m "chore: bump version to ${{ env.BASE_VERSION }} [skip ci]" || exit 0
-          git push || exit 0
       - name: Build and push Docker image
         run: |
           if [[ "${{ env.BRANCH_NAME }}" == "main" ]]; then
@@ -123,3 +134,13 @@ jobs:
               -t $TAG_BRANCH \
               --push .
           fi
+      - name: Commit version bump
+        if: env.BASE_VERSION != env.CURRENT_VERSION
+        run: |
+          # Update package.json with base version (without build number for branches)
+          jq --arg version "${{ env.BASE_VERSION }}" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "chore: bump version to ${{ env.BASE_VERSION }} [skip ci]" || exit 0
+          git push || exit 0
