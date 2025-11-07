@@ -41,6 +41,16 @@ const {
 
 console.log(`${LOGIN_INSTANCE_NAME}, ${POST_INSTANCE_NAME}, ${COMMUNITY_NAME}, ${BOT_USERNAME}, ${TIMEZONE}, ${CRON_EXPRESSION}, RUN_AT_START=${RUN_AT_START}`);
 
+// Validate timezone is supported by Intl API
+try {
+    new Intl.DateTimeFormat('en-US', { timeZone: TIMEZONE });
+} catch (error) {
+    console.error(`ERROR: Invalid timezone '${TIMEZONE}'. This is often caused by missing ICU (International Components for Unicode) support in Node.js.`);
+    console.error(`On Docker/ARM systems, ensure tzdata is installed and TZ environment variable is set.`);
+    console.error(`Error details:`, error);
+    process.exit(1);
+}
+
 // Parse runAtStart from environment (strict true only), default false
 const runAtStart = (RUN_AT_START ?? '').trim().toLowerCase() === 'true';
 

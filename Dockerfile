@@ -37,6 +37,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN npm install
 
+# Verify ICU support for timezone handling (using Australia/Brisbane as a test since TZ is set at runtime)
+RUN node -e "try { new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Brisbane' }); console.log('ICU timezone support: OK'); } catch(e) { console.error('ICU timezone support: FAILED', e); process.exit(1); }"
+
 # Run the application as a non-root user.
 USER node
 

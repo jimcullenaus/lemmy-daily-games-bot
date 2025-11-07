@@ -132,10 +132,11 @@ jobs:
               -t $TAG_LATEST -t $TAG_VERSION \
               --push .
           else
-            # For branches, use NEW_VERSION which includes branch name and build number
+            # For branches, tag with version (includes branch name and build number) and also tag as latest for this branch with version
             TAG_BRANCH="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NEW_VERSION }}"
+            TAG_BRANCH_LATEST="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}-${{ env.BASE_VERSION }}-latest"
             docker buildx build --platform linux/amd64,linux/arm64 \
-              -t $TAG_BRANCH \
+              -t $TAG_BRANCH -t $TAG_BRANCH_LATEST \
               --push .
           fi
       - name: Commit version bump
