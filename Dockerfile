@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxfixes3 \
     ca-certificates \
     fonts-liberation \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install
