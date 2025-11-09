@@ -11,6 +11,7 @@ services:
       - FEDERATION=${FEDERATION}
       - TIMEZONE=${TIMEZONE}
       - CRON_EXPRESSION=${CRON_EXPRESSION}
+      - FORCE_DEFAULT_CRON=${FORCE_DEFAULT_CRON}
     volumes:
       # - ${ENV_FILE:?Env file not provided}:/usr/src/app/.env
       - ./logs:/usr/src/app/logs

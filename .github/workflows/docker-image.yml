@@ -134,7 +134,7 @@ jobs:
           else
             # For branches, tag with version (includes branch name and build number) and also tag as latest for this branch with version
             TAG_BRANCH="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NEW_VERSION }}"
-            TAG_BRANCH_LATEST="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}-${{ env.BASE_VERSION }}-latest"
+            TAG_BRANCH_LATEST="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.BASE_VERSION }}-${{ env.BRANCH_NAME }}-latest"
             docker buildx build --platform linux/amd64,linux/arm64 \
               -t $TAG_BRANCH -t $TAG_BRANCH_LATEST \
               --push .
