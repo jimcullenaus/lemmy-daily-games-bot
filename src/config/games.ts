@@ -35,7 +35,7 @@ export const GAMES: GameConfig[] = [
             { type: 'click', selector: "//*[@role='button']", required: false },
             { type: 'wait', duration: 500 }
         ],
-        cronExpression: '0 4 14 * * *'
+        cronExpression: '0 0 14 * * *'
     },
     {
         name: 'Circuits',
@@ -43,7 +43,7 @@ export const GAMES: GameConfig[] = [
         titlePrefix: 'Circuits',
         screenshotSelector: '.circuits', // This element is inside an iframe with id 'game-iframe'
         startDate: '2023-10-16', // Start date calculated so Oct 13, 2025 = day 729
-        cronExpression: '0 4 15 * * *',
+        cronExpression: '0 4 16 * * *',
         screenshotActions: [
             { type: 'wait', duration: 5000 } // Wait 5 seconds for page and iframe to load
         ]
@@ -60,6 +60,6 @@ export const GAMES: GameConfig[] = [
             { type: 'click', text: 'Start', required: true },
             { type: 'wait', duration: 1000 }
         ],
-        cronExpression: '0 4 14 * * *'
+        cronExpression: '0 4 15 * * *'
     }
 ];

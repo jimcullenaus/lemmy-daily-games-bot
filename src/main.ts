@@ -36,18 +36,17 @@ const {
     PASSWORD,
     TIMEZONE,
     CRON_EXPRESSION,
-    RUN_AT_START
+    FORCE_DEFAULT_CRON
 } = process.env as Record<string, string>;
 
-console.log(`${LOGIN_INSTANCE_NAME}, ${POST_INSTANCE_NAME}, ${COMMUNITY_NAME}, ${BOT_USERNAME}, ${TIMEZONE}, ${CRON_EXPRESSION}, RUN_AT_START=${RUN_AT_START}`);
+console.log(`@${BOT_USERNAME}@${LOGIN_INSTANCE_NAME}, !${COMMUNITY_NAME}@${POST_INSTANCE_NAME}, ${TIMEZONE}, ${CRON_EXPRESSION}, FORCE_DEFAULT_CRON=${FORCE_DEFAULT_CRON}`);
 
-// Parse runAtStart from environment (strict true only), default false
-const runAtStart = (RUN_AT_START ?? '').trim().toLowerCase() === 'true';
+const forceDefaultCron = (FORCE_DEFAULT_CRON ?? '').trim().toLowerCase() === 'true';
 
 // Group games by their effective cron (per-game or global)
 const gamesByCron = new Map<string, GameConfig[]>();
 for (const game of GAMES) {
-    const cron = game.cronExpression || CRON_EXPRESSION;
+    const cron = (!forceDefaultCron && game.cronExpression) ? game.cronExpression : CRON_EXPRESSION;
     if (!gamesByCron.has(cron)) {
         gamesByCron.set(cron, []);
     }
@@ -58,7 +57,6 @@ for (const game of GAMES) {
 const tasks = Array.from(gamesByCron.entries()).map(([cron, games]) => ({
     cronExpression: cron,
     timezone: TIMEZONE,
-    runAtStart: runAtStart,
     doTask: async (ref: any) => {
         const gameService = new GameService(ref.botActions, TIMEZONE, LOGIN_INSTANCE_NAME);
         const communityResponse = await ref.botActions.getCommunity({

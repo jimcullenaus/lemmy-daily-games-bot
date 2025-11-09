@@ -6,15 +6,15 @@ A bot for automating the submission of daily games to the Lemmy [!dailygames@lem
 shown with their original values:
 
 ```env
-LOGIN_INSTANCE_NAME='lemmy.zip'
-POST_INSTANCE_NAME='lemmy.zip'
-COMMUNITY_NAME='dailygames'
-BOT_USERNAME='DailyGameBot'
-PASSWORD=''
-FEDERATION='local'
-TIMEZONE='Australia/Brisbane'
-CRON_EXPRESSION='0 0 14 * * *'
-RUN_AT_START='false'
+LOGIN_INSTANCE_NAME=lemmy.zip
+POST_INSTANCE_NAME=lemmy.zip
+COMMUNITY_NAME=dailygames
+BOT_USERNAME=DailyGameBot
+PASSWORD=***
+FEDERATION=local
+TIMEZONE=Australia/Brisbane
+CRON_EXPRESSION=0 0 14 * * *
+FORCE_DEFAULT_CRON=false
 ```
 
 2. Edit the `GAMES` entity in `games.ts` to contain each of the games to be posted, instructions for how to obtain the screenshot, and optionally the time to post them, if it doesn't match the global time.
@@ -28,5 +28,5 @@ Ensure environment variables as above are set. `docker-compose up` will read fro
 ## Testing
 
 1. Add an alternative environment file, `.env.development` with configuration for testing.
-2. Use `RUN_AT_START='true'` to cause all services to run at once.
+2. Optionally set `FORCE_DEFAULT_CRON='true'` to ignore any per-game cron expressions and use the global `CRON_EXPRESSION` for every game. This is useful when testing schedules locally.
 3. Run with `npm run dev`
