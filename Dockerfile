@@ -10,6 +10,10 @@ COPY package*.json ./
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    python3-pip \
+    pkg-config \
     libnss3 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -20,6 +24,11 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libpangocairo-1.0-0 \
     libpango-1.0-0 \
+    libpango1.0-dev \
+    libcairo2-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
     libgtk-3-0 \
     libxdamage1 \
     libxfixes3 \
