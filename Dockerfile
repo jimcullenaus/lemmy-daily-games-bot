@@ -9,10 +9,7 @@ COPY package*.json ./
 
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    python3 \
-    pkg-config \
+RUN apt-get update && apt-get install -y \
     libnss3 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -21,24 +18,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 \
     libgbm-dev \
     libasound2 \
-    libpango1.0-dev \
-    libcairo2-dev \
-    libjpeg62-turbo-dev \
-    libpixman-1-dev \
-    libgif-dev \
-    libpng-dev \
+    libpangocairo-1.0-0 \
+    libpango-1.0-0 \
     libgtk-3-0 \
     libxdamage1 \
     libxfixes3 \
     ca-certificates \
     fonts-liberation \
-    tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install
-
-# Verify ICU support for timezone handling (using Australia/Brisbane as a test since TZ is set at runtime)
-RUN node -e "try { new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Brisbane' }); console.log('ICU timezone support: OK'); } catch(e) { console.error('ICU timezone support: FAILED', e); process.exit(1); }"
 
 # Run the application as a non-root user.
 USER node
