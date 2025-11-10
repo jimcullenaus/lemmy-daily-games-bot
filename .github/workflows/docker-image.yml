@@ -120,6 +120,12 @@ jobs:
           echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          if [[ "$BASE_VERSION" != "$CURRENT_VERSION" ]]; then
+            jq --arg version "$BASE_VERSION" '.version = $version' package.json > package.json.tmp
+            mv package.json.tmp package.json
+            echo "package.json version updated to $BASE_VERSION ready for build context"
+          fi
       - name: Read version and image name
         id: get-version
         run: |
