@@ -2,6 +2,7 @@ import LemmyBot from 'lemmy-bot';
 import { config } from 'dotenv';
 import GameService from './services/game-service';
 import { GAMES, GameConfig } from './config/games';
+import AppConfig from './config/app-config';
 
 // Parse the env file if environment variables not already set
 if (!process.env.LOGIN_INSTANCE_NAME
@@ -28,25 +29,16 @@ if (!process.env.LOGIN_INSTANCE_NAME
     });
 }
 
-const {
-    LOGIN_INSTANCE_NAME,
-    POST_INSTANCE_NAME,
-    COMMUNITY_NAME,
-    BOT_USERNAME,
-    PASSWORD,
-    TIMEZONE,
-    CRON_EXPRESSION,
-    FORCE_DEFAULT_CRON
-} = process.env as Record<string, string>;
+const appConfig = AppConfig.fromEnvironment();
 
-console.log(`@${BOT_USERNAME}@${LOGIN_INSTANCE_NAME}, !${COMMUNITY_NAME}@${POST_INSTANCE_NAME}, ${TIMEZONE}, ${CRON_EXPRESSION}, FORCE_DEFAULT_CRON=${FORCE_DEFAULT_CRON}`);
+console.log(`@${appConfig.botUsername}@${appConfig.loginInstanceName}, !${appConfig.communityName}@${appConfig.postInstanceName}, ${appConfig.timezone}, ${appConfig.cronExpression}, FORCE_DEFAULT_CRON=${appConfig.forceDefaultCron}`);
 
-const forceDefaultCron = (FORCE_DEFAULT_CRON ?? '').trim().toLowerCase() === 'true';
+const forceDefaultCron = appConfig.forceDefaultCron;
 
 // Group games by their effective cron (per-game or global)
 const gamesByCron = new Map<string, GameConfig[]>();
 for (const game of GAMES) {
-    const cron = (!forceDefaultCron && game.cronExpression) ? game.cronExpression : CRON_EXPRESSION;
+    const cron = (!forceDefaultCron && game.cronExpression) ? game.cronExpression : appConfig.cronExpression;
     if (!gamesByCron.has(cron)) {
         gamesByCron.set(cron, []);
     }
@@ -56,11 +48,11 @@ for (const game of GAMES) {
 // Create task for each unique cron schedule
 const tasks = Array.from(gamesByCron.entries()).map(([cron, games]) => ({
     cronExpression: cron,
-    timezone: TIMEZONE,
+    timezone: appConfig.timezone,
     doTask: async (ref: any) => {
-        const gameService = new GameService(ref.botActions, TIMEZONE, LOGIN_INSTANCE_NAME);
+        const gameService = new GameService(ref.botActions, appConfig.timezone, appConfig.loginInstanceName);
         const communityResponse = await ref.botActions.getCommunity({
-            name: `${COMMUNITY_NAME}@${POST_INSTANCE_NAME}`
+            name: `${appConfig.communityName}@${appConfig.postInstanceName}`
         });
 
         // Post each game for this cron schedule
@@ -77,10 +69,10 @@ const tasks = Array.from(gamesByCron.entries()).map(([cron, games]) => ({
 }));
 
 const bot = new LemmyBot({
-    instance: LOGIN_INSTANCE_NAME,
+    instance: appConfig.loginInstanceName,
     credentials: {
-        username: BOT_USERNAME,
-        password: PASSWORD
+        username: appConfig.botUsername,
+        password: appConfig.password
     },
     schedule: tasks
 });
