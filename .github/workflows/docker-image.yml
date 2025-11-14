@@ -8,162 +8,116 @@ on:
       - 'feature/*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  release:
     if: |
+      github.ref == 'refs/heads/main' &&
       !startsWith(github.event.head_commit.message, 'doc') &&
       !contains(github.event.head_commit.message, 'WIP') &&
-      !startsWith(github.event.head_commit.message, 'chore: bump version') &&
+      !startsWith(github.event.head_commit.message, 'chore(release):') &&
       !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for commit analysis
-          token: ${{ secrets.GITHUB_TOKEN }}  # Required for pushing commits
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install semantic-release
+        run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
+      - name: Run semantic-release
+        id: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          echo "$OUTPUT"
+          NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
+          if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
+            echo "new_release_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "new_release_published=true" >> $GITHUB_OUTPUT
+            echo "Next version: $NEXT_VERSION"
+          else
+            echo "new_release_published=false" >> $GITHUB_OUTPUT
+            echo "No release needed"
+          fi
+      - name: Set up Docker Buildx
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+      - name: Build and push Docker image
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        env:
+          VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
+          TAG_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:latest"
+          TAG_VERSION="ghcr.io/$REPO_OWNER/$IMAGE_NAME:$VERSION"
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t "$TAG_LATEST" -t "$TAG_VERSION" \
+            --push .
+      - name: Publish release
+        if: steps.semantic-release.outputs.new_release_published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: semantic-release
+
+  build-branch:
+    if: |
+      github.ref != 'refs/heads/main' &&
+      !startsWith(github.event.head_commit.message, 'doc') &&
+      !contains(github.event.head_commit.message, 'WIP') &&
+      !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install semantic-release
+        run: npm install -g semantic-release@25
+      - name: Determine next version
+        id: version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          echo "$OUTPUT"
+          NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
+          if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
+            echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "Would become version: $NEXT_VERSION if merged to main"
+          else
+            CURRENT_VERSION=$(jq -r .version package.json)
+            echo "next_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "No version bump needed, using current: $CURRENT_VERSION"
+          fi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-      - name: Set environment variables
-        run: |
-          echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
-          BRANCH_NAME=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-      - name: Analyze commits and determine version bump
-        id: version-bump
-        env:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
-          RUN_NUMBER: ${{ github.run_number }}
-        run: |
-          CURRENT_VERSION=$(jq -r .version package.json)
-          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
-
-          # Get BRANCH_NAME from environment (set in previous step)
-          BRANCH_NAME="${BRANCH_NAME}"
-
-          # Initialize BASE_VERSION to current version (will be updated if bumping)
-          BASE_VERSION="$CURRENT_VERSION"
-
-          # For branches, check if version has already been bumped for this branch
-          # by comparing with main branch version
-          if [[ "$BRANCH_NAME" != "main" ]]; then
-            # Get the version from main branch
-            MAIN_VERSION=$(git show origin/main:package.json 2>/dev/null | jq -r .version 2>/dev/null || echo "$CURRENT_VERSION")
-
-            # If current version matches main, this is a new branch - bump version
-            # Otherwise, use existing version (already bumped for this branch)
-            if [[ "$CURRENT_VERSION" == "$MAIN_VERSION" ]]; then
-              SHOULD_BUMP=true
-              echo "New branch detected, will bump version from main ($MAIN_VERSION)"
-            else
-              SHOULD_BUMP=false
-              BASE_VERSION="$CURRENT_VERSION"
-              echo "Branch already has version $CURRENT_VERSION, reusing it"
-            fi
-          else
-            # On main, always bump version
-            SHOULD_BUMP=true
-          fi
-
-          if [[ "$SHOULD_BUMP" == "true" ]]; then
-            # Check commit messages for version bump indicators
-            BUMP_TYPE="patch"  # Default to patch
-
-            # Get commit messages from the push event
-            COMMIT_MESSAGES=$(echo "$COMMITS_JSON" | jq -r '.[].message' | tr '\n' '|')
-
-            # Check for BREAKING changes (major bump)
-            if echo "$COMMIT_MESSAGES" | grep -qiE "(BREAKING|BREAKING CHANGE)"; then
-              BUMP_TYPE="major"
-            # Check for feat: or feat(scope): (minor bump)
-            # Match "feat:" exactly OR "feat(anything):" at start of commit message
-            elif echo "$COMMIT_MESSAGES" | grep -qiE "^feat(:|\([^)]+\):)"; then
-              BUMP_TYPE="minor"
-            fi
-
-            echo "BUMP_TYPE=$BUMP_TYPE" >> $GITHUB_ENV
-            echo "Detected bump type: $BUMP_TYPE"
-
-            # Bump version using semver logic
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-
-            case "$BUMP_TYPE" in
-              major)
-                MAJOR=$((MAJOR + 1))
-                MINOR=0
-                PATCH=0
-                ;;
-              minor)
-                MINOR=$((MINOR + 1))
-                PATCH=0
-                ;;
-              patch)
-                PATCH=$((PATCH + 1))
-                ;;
-            esac
-
-            BASE_VERSION="$MAJOR.$MINOR.$PATCH"
-            echo "Version bumped from $CURRENT_VERSION to $BASE_VERSION"
-          fi
-
-          # For branches, append build number for tagging (but don't commit build number)
-          if [[ "$BRANCH_NAME" != "main" ]]; then
-            # Get build number from git tags for this branch, or use run number
-            BUILD_NUMBER=$RUN_NUMBER
-            NEW_VERSION="${BASE_VERSION}-${BRANCH_NAME}-${BUILD_NUMBER}"
-          else
-            NEW_VERSION="$BASE_VERSION"
-          fi
-
-          echo "BASE_VERSION=$BASE_VERSION" >> $GITHUB_ENV
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-          if [[ "$BASE_VERSION" != "$CURRENT_VERSION" ]]; then
-            jq --arg version "$BASE_VERSION" '.version = $version' package.json > package.json.tmp
-            mv package.json.tmp package.json
-            echo "package.json version updated to $BASE_VERSION ready for build context"
-          fi
-      - name: Read version and image name
-        id: get-version
-        run: |
-          VERSION=$(jq -r .version package.json)
-          IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
       - name: Build and push Docker image
         env:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          BASE_VERSION: ${{ env.BASE_VERSION }}
-          NEW_VERSION: ${{ env.NEW_VERSION }}
-          REPO_OWNER: ${{ env.REPO_OWNER }}
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
-          if [[ "$BRANCH_NAME" == "main" ]]; then
-            TAG_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:latest"
-            TAG_VERSION="ghcr.io/$REPO_OWNER/$IMAGE_NAME:$BASE_VERSION"
-            docker buildx build --platform linux/amd64,linux/arm64 \
-              -t "$TAG_LATEST" -t "$TAG_VERSION" \
-              --push .
-          else
-            # For branches, tag with version (includes branch name and build number) and also tag as latest for this branch with version
-            TAG_BRANCH="ghcr.io/$REPO_OWNER/$IMAGE_NAME:$NEW_VERSION"
-            TAG_BRANCH_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:${BASE_VERSION}-${BRANCH_NAME}-latest"
-            docker buildx build --platform linux/amd64,linux/arm64 \
-              -t "$TAG_BRANCH" -t "$TAG_BRANCH_LATEST" \
-              --push .
-          fi
-      - name: Commit version bump
-        if: env.BASE_VERSION != env.CURRENT_VERSION
-        env:
-          BASE_VERSION: ${{ env.BASE_VERSION }}
-        run: |
-          # Update package.json with base version (without build number for branches)
-          jq --arg version "$BASE_VERSION" '.version = $version' package.json > package.json.tmp && mv package.json.tmp package.json
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json
-          git commit -m "chore: bump version to $BASE_VERSION [skip ci]" || exit 0
-          git push || exit 0
+          IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
+          BRANCH_SANITIZED=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          FULL_VERSION="${NEXT_VERSION}-${BRANCH_SANITIZED}-${RUN_NUMBER}"
+          TAG_BRANCH="ghcr.io/$REPO_OWNER/$IMAGE_NAME:$FULL_VERSION"
+          TAG_BRANCH_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:${NEXT_VERSION}-${BRANCH_SANITIZED}-latest"
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t "$TAG_BRANCH" -t "$TAG_BRANCH_LATEST" \
+            --push .
