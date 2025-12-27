@@ -83,16 +83,3 @@ tasks.forEach((task, index) => {
     const games = gamesByCron.get(task.cronExpression)!;
     console.log(`  Schedule ${index + 1}: "${task.cronExpression}" for games: ${games.map(g => g.name).join(', ')}`);
 });
-
-// Handle shutdown signals gracefully
-process.on('SIGTERM', () => {
-    console.log('Received SIGTERM, shutting down gracefully...');
-    bot.stop();
-    process.exit(0);
-});
-
-process.on('SIGINT', () => {
-    console.log('Received SIGINT, shutting down gracefully...');
-    bot.stop();
-    process.exit(0);
-});
