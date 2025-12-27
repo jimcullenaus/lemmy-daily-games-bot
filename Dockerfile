@@ -10,10 +10,9 @@ COPY package*.json ./
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros \
+    && apt-get install -y --no-install-recommends \
+    fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros \
     fonts-kacst fonts-freefont-ttf dbus dbus-x11 \
-    && npx puppeteer browsers install chrome --install-deps \
-    && apt-get install -y \
     build-essential \
     python3 \
     python3-pip \
@@ -41,6 +40,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN npm install
+
+# Clear any cached Chrome binaries and reinstall for the correct architecture
+# This ensures ARM builds get ARM Chrome, not x86_64
+RUN rm -rf /usr/src/app/.cache/puppeteer && \
+    npx puppeteer browsers install chrome
 
 # Run the application as a non-root user.
 USER node
