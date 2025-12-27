@@ -1,5 +1,5 @@
 # Use Node.js 22 as the base image
-FROM node:22
+FROM node:24-slim
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
@@ -9,7 +9,11 @@ COPY package*.json ./
 
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros \
+    fonts-kacst fonts-freefont-ttf dbus dbus-x11 \
+    && npx puppeteer browsers install chrome --install-deps \
+    && apt-get install -y \
     build-essential \
     python3 \
     python3-pip \
