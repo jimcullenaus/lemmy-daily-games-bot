@@ -1,7 +1,8 @@
 services:
   node:
     build: .
-    image: lemmy-daily-games-bot:latest
+    #image: lemmy-daily-games-bot:latest
+    init: true
     environment:
       - LOGIN_INSTANCE_NAME=${LOGIN_INSTANCE_NAME}
       - POST_INSTANCE_NAME=${POST_INSTANCE_NAME}
