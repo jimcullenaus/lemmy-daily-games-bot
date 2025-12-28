@@ -1,4 +1,4 @@
-# Use Node.js 22 as the base image
+# Use Node.js 24 as the base image
 FROM node:24-slim
 
 # Set the working directory inside the container
@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -44,13 +45,18 @@ RUN npm install
 # Clear any cached Chrome binaries and reinstall for the correct architecture
 # This ensures ARM builds get ARM Chrome, not x86_64
 RUN rm -rf /usr/src/app/.cache/puppeteer && \
-    npx puppeteer browsers install chrome
-
-# Run the application as a non-root user.
-USER node
+    npx puppeteer browsers install chrome && \
+    chmod -R 755 /usr/src/app/.cache/puppeteer
 
 # Copy the rest of the project files
 COPY . .
+
+# Create logs directory and set permissions
+RUN mkdir -p logs && \
+    chown -R node:node /usr/src/app
+
+# Run the application as a non-root user.
+USER node
 
 # Set a default command, but allow overriding it with an environment variable
 CMD npm start 2>&1 | tee logs/bot.log
