@@ -5,10 +5,18 @@ import { GameConfig, ScreenshotAction } from '../config/games';
 export default class ScreenshotService {
     async captureScreenshot(gameConfig: GameConfig): Promise<Buffer> {
         console.log(`Launching Puppeteer browser for ${gameConfig.name}`);
-        const browser = await puppeteer.launch({
+        const launchOptions: any = {
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+        };
+
+        // Use system Chromium if available (for ARM/Raspberry Pi)
+        if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+            launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+            console.log(`Using system Chromium at: ${launchOptions.executablePath}`);
+        }
+
+        const browser = await puppeteer.launch(launchOptions);
         const page = await browser.newPage();
         await page.goto(gameConfig.url, { waitUntil: "networkidle2" });
 

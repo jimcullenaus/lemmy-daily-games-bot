@@ -8,7 +8,6 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -38,15 +37,15 @@ RUN apt-get update \
     libxfixes3 \
     ca-certificates \
     fonts-liberation \
+    chromium \
+    chromium-sandbox \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install
+# Skip Puppeteer browser install since we'll use system Chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Clear any cached Chrome binaries and reinstall for the correct architecture
-# This ensures ARM builds get ARM Chrome, not x86_64
-RUN rm -rf /usr/src/app/.cache/puppeteer && \
-    npx puppeteer browsers install chrome && \
-    chmod -R 755 /usr/src/app/.cache/puppeteer
+RUN npm install
 
 # Copy the rest of the project files
 COPY . .
