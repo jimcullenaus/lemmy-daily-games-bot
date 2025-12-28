@@ -7,7 +7,41 @@ export default class ScreenshotService {
         console.log(`Launching Puppeteer browser for ${gameConfig.name}`);
         const launchOptions: any = {
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--disable-gpu',
+                '--disable-background-networking',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-breakpad',
+                '--disable-client-side-phishing-detection',
+                '--disable-component-update',
+                '--disable-default-apps',
+                '--disable-domain-reliability',
+                '--disable-extensions',
+                '--disable-features=AudioServiceOutOfProcess',
+                '--disable-hang-monitor',
+                '--disable-ipc-flooding-protection',
+                '--disable-notifications',
+                '--disable-offer-store-unmasked-wallet-cards',
+                '--disable-popup-blocking',
+                '--disable-print-preview',
+                '--disable-prompt-on-repost',
+                '--disable-renderer-backgrounding',
+                '--disable-speech-api',
+                '--disable-sync',
+                '--hide-scrollbars',
+                '--ignore-gpu-blacklist',
+                '--metrics-recording-only',
+                '--mute-audio',
+                '--no-default-browser-check',
+                '--no-pings',
+
+            ]
         };
 
         // Use system Chromium if available (for ARM/Raspberry Pi)
