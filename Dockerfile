@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json first
 COPY package*.json ./
 
-ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
+# ENV PUPPETEER_CACHE_DIR=/usr/src/app/.cache/puppeteer
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -42,8 +42,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Skip Puppeteer browser install since we'll use system Chromium
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# ENV PUPPETEER_SKIP_DOWNLOAD=true
+# ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN npm install
 
