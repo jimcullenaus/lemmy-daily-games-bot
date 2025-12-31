@@ -39,6 +39,9 @@ RUN apt-get update \
     fonts-liberation \
     chromium \
     chromium-sandbox \
+    gconf-service libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 \
+    libglib2.0-0 libnspr4 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcursor1 libxext6 libxi6 libxrender1 libxss1 libxtst6 libappindicator1 \
+    lsb-release xdg-utils wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Skip Puppeteer browser install since we'll use system Chromium
