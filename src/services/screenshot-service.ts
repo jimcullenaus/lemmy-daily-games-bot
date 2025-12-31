@@ -7,9 +7,10 @@ export default class ScreenshotService {
         console.log(`Launching Puppeteer browser for ${gameConfig.name}`);
         const launchOptions: any = {
             headless: true,
+            executablePath: '/usr/bin/chromium',
             args: [
-                // '--no-sandbox',
-                // '--disable-setuid-sandbox',
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
                 // '--disable-dev-shm-usage',
                 // '--disable-accelerated-2d-canvas',
                 // '--no-first-run',
