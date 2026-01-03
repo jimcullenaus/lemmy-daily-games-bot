@@ -34,6 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          echo "Output:"
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
           if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
@@ -85,13 +86,14 @@ jobs:
         with:
           node-version: '22'
       - name: Install semantic-release
-        run: npm install -g semantic-release@25
+        run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
       - name: Determine next version
         id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          echo "Output:"
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
           if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
