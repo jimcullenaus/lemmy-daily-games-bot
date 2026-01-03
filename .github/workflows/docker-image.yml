@@ -34,7 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
-          echo "Output:"
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
           if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
@@ -93,7 +92,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
-          echo "Output:"
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
           if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
