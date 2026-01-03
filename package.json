@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/jimcullenaus/lemmy-daily-games-bot#readme",
   "dependencies": {
-    "canvas": "^3.1.0",
     "dotenv": "^16.4.7",
     "lemmy-bot": "^0.6.4",
     "luxon": "^3.5.0",

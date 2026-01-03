@@ -12,6 +12,7 @@ services:
       - TIMEZONE=${TIMEZONE}
       - CRON_EXPRESSION=${CRON_EXPRESSION}
       - FORCE_DEFAULT_CRON=${FORCE_DEFAULT_CRON}
+      - PUPPETEER_DISABLE_SANDBOX=${PUPPETEER_DISABLE_SANDBOX}
     volumes:
       # - ${ENV_FILE:?Env file not provided}:/usr/src/app/.env
       - ./logs:/usr/src/app/logs
