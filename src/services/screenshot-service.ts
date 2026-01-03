@@ -7,6 +7,7 @@ export default class ScreenshotService {
         console.log(`Launching Puppeteer browser for ${gameConfig.name}`);
         const browser = await puppeteer.launch({
             headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
         await page.goto(gameConfig.url, { waitUntil: "networkidle2" });
