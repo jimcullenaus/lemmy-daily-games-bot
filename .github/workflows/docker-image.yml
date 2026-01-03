@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install semantic-release
         run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
       - name: Run semantic-release
@@ -83,7 +83,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install semantic-release
         run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
       - name: Determine next version
