@@ -5,9 +5,16 @@ import { GameConfig, ScreenshotAction } from '../config/games';
 export default class ScreenshotService {
     async captureScreenshot(gameConfig: GameConfig): Promise<Buffer> {
         console.log(`Launching Puppeteer browser for ${gameConfig.name}`);
+
+        // Build browser args - disable sandbox if requested (needed for some Docker/ARM setups)
+        const args: string[] = [];
+        if (process.env.PUPPETEER_DISABLE_SANDBOX === 'true') {
+            args.push('--no-sandbox', '--disable-setuid-sandbox');
+        }
+
         const browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args
         });
         const page = await browser.newPage();
         await page.goto(gameConfig.url, { waitUntil: "networkidle2" });

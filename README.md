@@ -15,7 +15,10 @@ FEDERATION='local'
 TIMEZONE='Australia/Brisbane'
 CRON_EXPRESSION='0 0 14 * * *'
 FORCE_DEFAULT_CRON='false'
+PUPPETEER_DISABLE_SANDBOX='false'
 ```
+
+**Note on `PUPPETEER_DISABLE_SANDBOX`**: Set this to `'true'` if you encounter browser launch issues, particularly when running in more restricted environments like on a Synology NAS. Disabling the sandbox reduces security but may be necessary in some environments. Defaults to `'false'`.
 
 Values may be wrapped in single or double quotes, or use no quotes at all; the application trims matching quotes automatically so you can use the same `.env` file for local `npm start` and Docker `--env-file`.
 This ensures the same config can be used with `docker run` (which takes the input as literally written, including any quotes) and `npm start` (which implicitly strips the quotes).
