@@ -24,11 +24,12 @@ export const GAMES: GameConfig[] = [
         screenshotSelector: '#default-choices',
         startDate: '2023-06-12',
         screenshotActions: [
+            { type: 'click', selector: "//*[@id='fides-banner-container']//button[@data-testid='Reject all-btn']", required: false },
             { type: 'click', selector: '.purr-blocker-card__button', required: false },
             { type: 'click', text: 'Play', required: true },
             { type: 'wait', duration: 2000 },
             { type: 'click', selector: "//*[contains(@class, 'Tooltip-module_close')]//button", required: false },
-            { type: 'click', selector: "//*[contains(@class, 'Popover-module_popover')]//button", required: false },
+            { type: 'click', selector: "//button[contains(@class, 'Popover-module_popover__close')]", required: false },
             { type: 'wait', duration: 200 },
             { type: 'click', selector: "//*[@role='button']", required: false },
             { type: 'wait', duration: 200 },
