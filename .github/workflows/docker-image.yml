@@ -87,7 +87,7 @@ jobs:
           node-version: '24'
       - name: Install semantic-release
         run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
-      - name: Determine next version
+      - name: Determine version for tag
         id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,18 +95,13 @@ jobs:
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
-          if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
-            echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-            echo "Would become version: $NEXT_VERSION if merged to main"
-          else
+          if [ -z "$NEXT_VERSION" ]; then
             LATEST_TAG=$(git tag -l 'v*' --sort=-v:refname 2>/dev/null | head -1)
-            FALLBACK_VERSION=${LATEST_TAG#v}
-            if [ -z "$FALLBACK_VERSION" ]; then
-              FALLBACK_VERSION=$(jq -r .version package.json | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
-            fi
-            echo "next_version=$FALLBACK_VERSION" >> $GITHUB_OUTPUT
-            echo "Using latest release as base: $FALLBACK_VERSION"
+            NEXT_VERSION=${LATEST_TAG#v}
+            [ -z "$NEXT_VERSION" ] && NEXT_VERSION=$(jq -r .version package.json | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+            echo "Using latest release: $NEXT_VERSION"
           fi
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
