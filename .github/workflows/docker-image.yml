@@ -91,8 +91,14 @@ jobs:
         id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
+          # Semantic-release allows max 3 branches; globs expand to all matches.
+          # Use temp config with only main + current branch for dry-run analysis.
+          cp .releaserc.json .releaserc.json.bak
+          jq --arg b "$BRANCH_NAME" '.branches = ["main", $b]' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          mv .releaserc.json.bak .releaserc.json
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
           if [ -z "$NEXT_VERSION" ]; then
