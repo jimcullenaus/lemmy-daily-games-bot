@@ -1,6 +1,6 @@
 {
   "name": "lemmy-daily-games-bot",
-  "version": "1.3.5",
+  "version": "0.0.0-semantically-released",
   "description": "Bot for posting daily games to Lemmy",
   "scripts": {
     "start": "tsx src/main.ts",

@@ -1,5 +1,9 @@
 A bot for automating the submission of daily games to the Lemmy [!dailygames@lemmy.zip](https://lemmy.zip/c/dailygames) community.
 
+## Contributing
+
+Please use [conventional commits](https://www.conventionalcommits.org/) so releases can be generated automatically. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 ## Running
 
 1. Create a file called `.env` in the root directory. It should contain the following fields,

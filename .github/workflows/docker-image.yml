@@ -80,28 +80,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
       - name: Install semantic-release
         run: npm install -g semantic-release@25 @semantic-release/changelog@latest @semantic-release/git@latest @semantic-release/github@latest
-      - name: Determine next version
+      - name: Determine version for tag
         id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
+          # Semantic-release allows max 3 branches; globs expand to all matches.
+          # Use temp config with only main + current branch for dry-run analysis.
+          cp .releaserc.json .releaserc.json.bak
+          jq --arg b "$BRANCH_NAME" '.branches = ["main", $b]' .releaserc.json > .releaserc.json.tmp && mv .releaserc.json.tmp .releaserc.json
           OUTPUT=$(semantic-release --dry-run 2>&1) || true
+          mv .releaserc.json.bak .releaserc.json
           echo "$OUTPUT"
           NEXT_VERSION=$(echo "$OUTPUT" | grep "The next release version is" | sed 's/.*The next release version is //' | awk '{print $1}' | head -1)
-          if [ -n "$NEXT_VERSION" ] && [ "$NEXT_VERSION" != "" ]; then
-            echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
-            echo "Would become version: $NEXT_VERSION if merged to main"
-          else
-            CURRENT_VERSION=$(jq -r .version package.json)
-            echo "next_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-            echo "No version bump needed, using current: $CURRENT_VERSION"
+          if [ -z "$NEXT_VERSION" ]; then
+            LATEST_TAG=$(git tag -l 'v*' --sort=-v:refname 2>/dev/null | head -1)
+            NEXT_VERSION=${LATEST_TAG#v}
+            [ -z "$NEXT_VERSION" ] && NEXT_VERSION=$(jq -r .version package.json | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+            echo "Using latest release: $NEXT_VERSION"
           fi
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
@@ -115,9 +121,10 @@ jobs:
         run: |
           IMAGE_NAME=$(jq -r .name package.json | tr '[:upper:]' '[:lower:]' | tr -d '@' | tr '/' '-')
           BRANCH_SANITIZED=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
-          FULL_VERSION="${NEXT_VERSION}-${BRANCH_SANITIZED}-${RUN_NUMBER}"
+          BASE_VERSION=$(echo "$NEXT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          FULL_VERSION="${BASE_VERSION}-${BRANCH_SANITIZED}-${RUN_NUMBER}"
           TAG_BRANCH="ghcr.io/$REPO_OWNER/$IMAGE_NAME:$FULL_VERSION"
-          TAG_BRANCH_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:${NEXT_VERSION}-${BRANCH_SANITIZED}-latest"
+          TAG_BRANCH_LATEST="ghcr.io/$REPO_OWNER/$IMAGE_NAME:${BASE_VERSION}-${BRANCH_SANITIZED}-latest"
           docker buildx build --platform linux/amd64,linux/arm64 \
             -t "$TAG_BRANCH" -t "$TAG_BRANCH_LATEST" \
             --push .
