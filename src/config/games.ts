@@ -24,7 +24,7 @@ export const GAMES: GameConfig[] = [
         screenshotSelector: '#default-choices',
         startDate: '2023-06-12',
         screenshotActions: [
-            { type: 'click', selector: "//*[@id='fides-banner-container']//button[@data-testid='Reject all-btn']", required: false },
+            { type: 'click', selector: "//*[@id='fides-banner-container']//button[.//text()[contains(., 'Reject all')]]", required: false },
             { type: 'click', selector: '.purr-blocker-card__button', required: false },
             { type: 'click', text: 'Play', required: true },
             { type: 'wait', duration: 2000 },
