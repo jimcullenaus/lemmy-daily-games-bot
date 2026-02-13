@@ -1,3 +1,10 @@
+## [1.3.7](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.6...v1.3.7) (2026-02-13)
+
+
+### Bug Fixes
+
+* find any reject button ([1d499a1](https://github.com/jimcullenaus/lemmy-daily-games-bot/commit/1d499a13aba095bf431fde7f1f335d1376cd8feb))
+
 ## [1.3.6](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.5...v1.3.6) (2026-02-07)
 
 
