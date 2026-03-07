@@ -1,3 +1,10 @@
+## [1.3.8](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.7...v1.3.8) (2026-03-07)
+
+
+### Bug Fixes
+
+* close the special 1000 Connections banner ([e8abebc](https://github.com/jimcullenaus/lemmy-daily-games-bot/commit/e8abebc6591251ea32b894e714c91ebee9117641))
+
 ## [1.3.7](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.6...v1.3.7) (2026-02-13)
 
 
