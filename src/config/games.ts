@@ -28,6 +28,7 @@ export const GAMES: GameConfig[] = [
             { type: 'click', selector: '.purr-blocker-card__button', required: false },
             { type: 'click', text: 'Play', required: true },
             { type: 'wait', duration: 2000 },
+            { type: 'click', selector: '.xwd__modal--close', required: false },
             { type: 'click', selector: "//*[contains(@class, 'Tooltip-module_close')]//button", required: false },
             { type: 'click', selector: "//button[contains(@class, 'Popover-module_popover__close')]", required: false },
             { type: 'wait', duration: 200 },
