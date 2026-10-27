@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.8...v1.4.0) (2026-10-27)
+
+
+### Features
+
+* support closing all popups ([de51ef4](https://github.com/jimcullenaus/lemmy-daily-games-bot/commit/de51ef4fe389d24877ecf752092dcc5e69c90075))
+
 ## [1.3.8](https://github.com/jimcullenaus/lemmy-daily-games-bot/compare/v1.3.7...v1.3.8) (2026-03-07)
 
 
