@@ -9,7 +9,7 @@ export interface GameConfig {
 }
 
 export interface ScreenshotAction {
-    type: 'click' | 'wait' | 'hide';
+    type: 'click' | 'wait' | 'hide' | 'dismissPopups';
     selector?: string;
     text?: string;
     duration?: number;
@@ -35,7 +35,9 @@ export const GAMES: GameConfig[] = [
             { type: 'click', selector: "//*[@role='button']", required: false },
             { type: 'wait', duration: 200 },
             { type: 'click', selector: "//*[@role='button']", required: false },
-            { type: 'wait', duration: 500 }
+            { type: 'wait', duration: 500 },
+            // Catch-all for any popups added since the selectors above were written
+            { type: 'dismissPopups' }
         ],
         cronExpression: '0 0 14 * * *'
     },

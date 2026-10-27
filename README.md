@@ -22,6 +22,8 @@ FORCE_DEFAULT_CRON='false'
 PUPPETEER_DISABLE_SANDBOX='false'
 ```
 
+Optionally, `ONLY_GAMES` can be set to a comma-separated list of game names from `games.ts` (e.g. `ONLY_GAMES='Connections,Crossherd'`) to post only those games. Leave it unset to post all games.
+
 **Note on `PUPPETEER_DISABLE_SANDBOX`**: Set this to `'true'` if you encounter browser launch issues, particularly when running in more restricted environments like on a Synology NAS. Disabling the sandbox reduces security but may be necessary in some environments. Defaults to `'false'`.
 
 Values may be wrapped in single or double quotes, or use no quotes at all; the application trims matching quotes automatically so you can use the same `.env` file for local `npm start` and Docker `--env-file`.
@@ -42,4 +44,5 @@ Use the prebuilt Docker image with `docker run --env-file=.env ghcr.io/jimcullen
 
 1. Add an alternative environment file, `.env.development` with configuration for testing.
 2. Optionally set `FORCE_DEFAULT_CRON='true'` to ignore any per-game cron expressions and use the global `CRON_EXPRESSION` for every game. This is useful when testing schedules locally.
-3. Run with `npm run dev`
+3. Optionally set `ONLY_GAMES` to test only specific games, e.g. `ONLY_GAMES='Connections'`.
+4. Run with `npm run dev`

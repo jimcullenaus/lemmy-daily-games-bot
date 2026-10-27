@@ -31,13 +31,21 @@ if (!process.env.LOGIN_INSTANCE_NAME
 
 const appConfig = AppConfig.fromEnvironment();
 
-console.log(`@${appConfig.botUsername}@${appConfig.loginInstanceName}, !${appConfig.communityName}@${appConfig.postInstanceName}, ${appConfig.timezone}, ${appConfig.cronExpression}, FORCE_DEFAULT_CRON=${appConfig.forceDefaultCron}`);
+console.log(`@${appConfig.botUsername}@${appConfig.loginInstanceName}, !${appConfig.communityName}@${appConfig.postInstanceName}, ${appConfig.timezone}, ${appConfig.cronExpression}, FORCE_DEFAULT_CRON=${appConfig.forceDefaultCron}, ONLY_GAMES=${appConfig.onlyGames.join(',') || '(all)'}`);
 
 const forceDefaultCron = appConfig.forceDefaultCron;
 
+// Optionally restrict to a subset of games (e.g. for testing)
+const selectedGames = appConfig.onlyGames.length > 0
+    ? GAMES.filter(game => appConfig.onlyGames.includes(game.name.toLowerCase()))
+    : GAMES;
+if (selectedGames.length === 0) {
+    throw new Error(`ONLY_GAMES=${appConfig.onlyGames.join(',')} matched none of: ${GAMES.map(g => g.name).join(', ')}`);
+}
+
 // Group games by their effective cron (per-game or global)
 const gamesByCron = new Map<string, GameConfig[]>();
-for (const game of GAMES) {
+for (const game of selectedGames) {
     const cron = (!forceDefaultCron && game.cronExpression) ? game.cronExpression : appConfig.cronExpression;
     if (!gamesByCron.has(cron)) {
         gamesByCron.set(cron, []);

@@ -9,6 +9,7 @@ export default class AppConfig {
     public readonly timezone: string;
     public readonly cronExpression: string;
     public readonly forceDefaultCron: boolean;
+    public readonly onlyGames: string[];
 
     private constructor(env : Env) {
         this.loginInstanceName = AppConfig.requireEnv(env, 'LOGIN_INSTANCE_NAME');
@@ -20,6 +21,10 @@ export default class AppConfig {
         this.cronExpression = AppConfig.requireEnv(env, 'CRON_EXPRESSION');
         const forceDefaultCronRaw = AppConfig.sanitise(env.FORCE_DEFAULT_CRON);
         this.forceDefaultCron = forceDefaultCronRaw.toLowerCase() === 'true';
+        this.onlyGames = AppConfig.sanitise(env.ONLY_GAMES)
+            .split(',')
+            .map(name => name.trim().toLowerCase())
+            .filter(name => name.length > 0);
     }
 
     public static fromEnvironment(env : Env = process.env) : AppConfig {
