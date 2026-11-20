@@ -65,5 +65,16 @@ export const GAMES: GameConfig[] = [
             { type: 'wait', duration: 1000 }
         ],
         cronExpression: '0 4 15 * * *'
+    },
+    {
+        name: 'TimeTurtle',
+        url: 'https://timeturtle.pages.dev/?ref=dailygamebot',
+        titlePrefix: 'TimeTurtle',
+        screenshotSelector: '#startScreen .hero', // Start screen card: today's puzzle number, no answers shown
+        startDate: '2026-11-04', // TimeTurtle #1 was Nov 4, 2026
+        screenshotActions: [
+            { type: 'wait', duration: 1000 } // Let the puzzle number and date fill in
+        ],
+        cronExpression: '0 0 13 * * *' // One hour before Connections (03:00 UTC)
     }
 ];
